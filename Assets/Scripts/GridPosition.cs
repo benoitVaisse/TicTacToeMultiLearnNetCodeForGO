@@ -23,7 +23,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         public void OnMouseDown()
         {
             Debug.Log("Click!!");
-            GameManager.Instance.ClikedOnGridPosition(x, y);
+            GameManager.Instance.ClikedOnGridPositionRpc(x, y, GameManager.Instance.PlayerType);
         }
     }
 }

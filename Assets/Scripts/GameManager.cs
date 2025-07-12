@@ -1,6 +1,6 @@
 ﻿using System;
 using Unity.Netcode;
-using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
 {
@@ -12,6 +12,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
 
         private PlayerType _playerType;
         public PlayerType PlayerType => _playerType;
+        private PlayerType _currentPlayanlePlayerType;
 
 
         public class OnClickOnGridPositionEventArgs : EventArgs
@@ -38,12 +39,32 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
             else if (NetworkManager.Singleton.LocalClientId == 1)
                 _playerType = PlayerType.Circle;
 
+            if (IsServer)
+                _currentPlayanlePlayerType = PlayerType.Cross;
+
         }
 
-        public void ClikedOnGridPosition(int x, int y)
+        [Rpc(SendTo.Server)]
+        public void ClikedOnGridPositionRpc(int x, int y, PlayerType localPlayerType)
         {
             Debug.Log($"CLiked on position {x}, {y}");
-            OnClickOnGridPosition?.Invoke(this, new OnClickOnGridPositionEventArgs() { X = x, Y = y, PlayerType = _playerType });
+            if (_currentPlayanlePlayerType != localPlayerType)
+            {
+                Debug.LogWarning($"Is not to {localPlayerType.ToString()} to play");
+                return;
+            }
+            OnClickOnGridPosition?.Invoke(this, new OnClickOnGridPositionEventArgs() { X = x, Y = y, PlayerType = localPlayerType });
+
+            switch (_currentPlayanlePlayerType)
+            {
+                default:
+                case PlayerType.Cross:
+                    _currentPlayanlePlayerType = PlayerType.Circle;
+                    break;
+                case PlayerType.Circle:
+                    _currentPlayanlePlayerType = PlayerType.Cross;
+                    break;
+            }
         }
     }
 }
