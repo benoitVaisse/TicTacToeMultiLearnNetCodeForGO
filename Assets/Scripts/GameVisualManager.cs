@@ -12,11 +12,23 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         private Transform _crossPrebab;
         [SerializeField]
         private Transform _circlePrebab;
+        [SerializeField]
+        private Transform _lineCompletePrefab;
 
 
         private void Start()
         {
             GameManager.Instance.OnClickOnGridPosition += Gamemanager_OnClickOnGridPosition;
+            GameManager.Instance.OnGameWinnerEvent += GameManager_OnGameWinnerEvent;
+        }
+
+        private void GameManager_OnGameWinnerEvent(object sender, GameManager.OnGameWinnerEventArguments e)
+        {
+            Transform line = Instantiate(_lineCompletePrefab,
+                                        GetGrisWorldPosition(e.CenterGridWin.x, e.CenterGridWin.y),
+                                        Quaternion.Euler(0, 0, (float)e.RotationLine));
+            line.GetComponent<NetworkObject>().Spawn(true);
+
         }
 
         private void Gamemanager_OnClickOnGridPosition(object sender, GameManager.OnClickOnGridPositionEventArgs e)
