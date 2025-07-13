@@ -24,6 +24,9 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
 
         private void GameManager_OnGameWinnerEvent(object sender, GameManager.OnGameWinnerEventArguments e)
         {
+            if (!NetworkManager.Singleton.IsServer)
+                return;
+
             Transform line = Instantiate(_lineCompletePrefab,
                                         GetGrisWorldPosition(e.CenterGridWin.x, e.CenterGridWin.y),
                                         Quaternion.Euler(0, 0, (float)e.RotationLine));

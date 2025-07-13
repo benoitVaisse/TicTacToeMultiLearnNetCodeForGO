@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -31,6 +32,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         {
             public Vector2Int CenterGridWin;
             public RotationLine RotationLine;
+            public PlayerType WinnerPlayerType;
         }
 
         private List<Line> _linesToWin = new();
@@ -121,36 +123,48 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
             _playerTypePositions[x, y] = localPlayerType;
 
             OnClickOnGridPosition?.Invoke(this, new OnClickOnGridPositionEventArgs() { X = x, Y = y, PlayerType = localPlayerType });
+            TestWinner();
 
             switch (_currentPlayanlePlayerType.Value)
             {
-                default:
                 case PlayerType.Cross:
                     _currentPlayanlePlayerType.Value = PlayerType.Circle;
                     break;
                 case PlayerType.Circle:
                     _currentPlayanlePlayerType.Value = PlayerType.Cross;
                     break;
+                default:
+                    _currentPlayanlePlayerType.Value = PlayerType.None;
+                    break;
             }
-            TestWinner();
         }
 
         private void TestWinner()
         {
-            foreach (var line in _linesToWin)
+            foreach (var line in _linesToWin.Select((line, index) => new { line, index }).ToList())
             {
-                if (TestWinnerLine(line)
+                if (TestWinnerLine(line.line)
                     )
                 {
                     Debug.Log("winner");
-                    OnGameWinnerEvent?.Invoke(this, new OnGameWinnerEventArguments()
-                    {
-                        CenterGridWin = line.CenterGridPosition,
-                        RotationLine = line.RotationLine,
-                    });
+                    Debug.Log($"TestWinner {_currentPlayanlePlayerType.Value}");
+                    TriggerOnGameWinnerEventRpc(line.index, _currentPlayanlePlayerType.Value);
+                    _currentPlayanlePlayerType.Value = PlayerType.None;
                 }
 
             }
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TriggerOnGameWinnerEventRpc(int indexWinnerLine, PlayerType playerType)
+        {
+            Line line = _linesToWin[indexWinnerLine];
+            OnGameWinnerEvent?.Invoke(this, new OnGameWinnerEventArguments()
+            {
+                CenterGridWin = line.CenterGridPosition,
+                RotationLine = line.RotationLine,
+                WinnerPlayerType = playerType
+            });
         }
 
         private bool TestWinnerLine(Line line)
