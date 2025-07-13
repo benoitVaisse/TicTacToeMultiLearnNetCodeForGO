@@ -21,8 +21,16 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
 
             GameManager.Instance.OnGameWinnerEvent += GameManager_OnGameWinnerEvent;
             GameManager.Instance.OnGameRematchEvent += GameManager_OnGameRematchEvent; ;
+            GameManager.Instance.OnGameTieEvent += GameManager_OnGameTieEvent;
 
             _rematchButton.onClick.AddListener(() => GameManager.Instance.RematchRpc());
+        }
+
+        private void GameManager_OnGameTieEvent(object sender, System.EventArgs e)
+        {
+            _resultTextMesh.color = Color.white;
+            _resultTextMesh.text = "Tie !!";
+            Show();
         }
 
         private void GameManager_OnGameRematchEvent(object sender, System.EventArgs e)

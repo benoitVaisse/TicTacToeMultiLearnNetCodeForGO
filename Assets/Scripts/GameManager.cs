@@ -29,6 +29,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         public event EventHandler OnSwitchCurrentPlayablePlayerEvent;
         public event EventHandler<OnGameWinnerEventArguments> OnGameWinnerEvent;
         public event EventHandler OnGameRematchEvent;
+        public event EventHandler OnGameTieEvent;
         public class OnGameWinnerEventArguments : EventArgs
         {
             public Vector2Int CenterGridWin;
@@ -151,9 +152,21 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
                     Debug.Log($"TestWinner {_currentPlayanlePlayerType.Value}");
                     TriggerOnGameWinnerEventRpc(line.index, _currentPlayanlePlayerType.Value);
                     _currentPlayanlePlayerType.Value = PlayerType.None;
+                    return;
                 }
 
             }
+
+            if (!_playerTypePositions.Cast<PlayerType>().Any(p => p == PlayerType.None))
+            {
+                TriggerOnGameTieEventRpc();
+            }
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TriggerOnGameTieEventRpc()
+        {
+            OnGameTieEvent?.Invoke(this, EventArgs.Empty);
         }
 
         [Rpc(SendTo.ClientsAndHost)]
