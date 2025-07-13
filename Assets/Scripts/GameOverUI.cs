@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
 {
@@ -11,18 +12,26 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         private Color _winColor;
         [SerializeField]
         private Color _loseColor;
+        [SerializeField]
+        private Button _rematchButton;
 
         private void Start()
         {
             Hide();
 
             GameManager.Instance.OnGameWinnerEvent += GameManager_OnGameWinnerEvent;
+            GameManager.Instance.OnGameRematchEvent += GameManager_OnGameRematchEvent; ;
+
+            _rematchButton.onClick.AddListener(() => GameManager.Instance.RematchRpc());
+        }
+
+        private void GameManager_OnGameRematchEvent(object sender, System.EventArgs e)
+        {
+            Hide();
         }
 
         private void GameManager_OnGameWinnerEvent(object sender, GameManager.OnGameWinnerEventArguments e)
         {
-            Debug.Log($"TestWinner {e.WinnerPlayerType}");
-            Debug.Log($"TestWinner {GameManager.Instance.PlayerType}");
             if (e.WinnerPlayerType == GameManager.Instance.PlayerType)
             {
                 _resultTextMesh.color = _winColor;

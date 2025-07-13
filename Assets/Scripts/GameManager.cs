@@ -28,6 +28,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         public event EventHandler OnGameStartedEvent;
         public event EventHandler OnSwitchCurrentPlayablePlayerEvent;
         public event EventHandler<OnGameWinnerEventArguments> OnGameWinnerEvent;
+        public event EventHandler OnGameRematchEvent;
         public class OnGameWinnerEventArguments : EventArgs
         {
             public Vector2Int CenterGridWin;
@@ -181,6 +182,27 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
             return playerTypePos1 != PlayerType.None &&
                 playerTypePos1 == playerTypePos2 &&
                 playerTypePos2 == playerTypePos3;
+        }
+
+        [Rpc(SendTo.Server)]
+        public void RematchRpc()
+        {
+            for (int x = 0; x < _playerTypePositions.GetLength(0); x++)
+            {
+                for (int y = 0; y < _playerTypePositions.GetLength(1); y++)
+                {
+                    _playerTypePositions[x, y] = PlayerType.None;
+                }
+            }
+
+            _currentPlayanlePlayerType.Value = PlayerType.Cross;
+            TriggerOnRematchEventRpc();
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TriggerOnRematchEventRpc()
+        {
+            OnGameRematchEvent?.Invoke(this, EventArgs.Empty);
         }
     }
 }

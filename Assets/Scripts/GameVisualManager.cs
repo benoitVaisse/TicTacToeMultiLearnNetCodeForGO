@@ -1,4 +1,5 @@
-﻿using Unity.Mathematics;
+﻿using System.Collections.Generic;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -15,11 +16,28 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         [SerializeField]
         private Transform _lineCompletePrefab;
 
+        private List<GameObject> _intantiatePrebabsInGameToReenitialize = new();
+
 
         private void Start()
         {
             GameManager.Instance.OnClickOnGridPosition += Gamemanager_OnClickOnGridPosition;
             GameManager.Instance.OnGameWinnerEvent += GameManager_OnGameWinnerEvent;
+            GameManager.Instance.OnGameRematchEvent += GameManager_OnGameRematchEvent;
+        }
+
+        private void GameManager_OnGameRematchEvent(object sender, System.EventArgs e)
+        {
+            foreach (GameObject go in _intantiatePrebabsInGameToReenitialize)
+            {
+                Destroy(go);
+            }
+            _intantiatePrebabsInGameToReenitialize.Clear();
+        }
+
+        private void OnGameRematchEvent()
+        {
+
         }
 
         private void GameManager_OnGameWinnerEvent(object sender, GameManager.OnGameWinnerEventArguments e)
@@ -31,6 +49,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
                                         GetGrisWorldPosition(e.CenterGridWin.x, e.CenterGridWin.y),
                                         Quaternion.Euler(0, 0, (float)e.RotationLine));
             line.GetComponent<NetworkObject>().Spawn(true);
+            _intantiatePrebabsInGameToReenitialize.Add(line.gameObject);
 
         }
 
@@ -55,6 +74,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
             }
             Transform spawnedCrossTransform = Instantiate(prefab, GetGrisWorldPosition(x, y), quaternion.identity);
             spawnedCrossTransform.GetComponent<NetworkObject>().Spawn(true);
+            _intantiatePrebabsInGameToReenitialize.Add(spawnedCrossTransform.gameObject);
         }
 
         private Vector2 GetGrisWorldPosition(int x, int y)
