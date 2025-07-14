@@ -14,7 +14,9 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         private PlayerType _playerType;
         public PlayerType PlayerType => _playerType;
         private NetworkVariable<PlayerType> _currentPlayanlePlayerType = new();
+        private NetworkVariable<PlayerScores> _scoreplayer = new NetworkVariable<PlayerScores>();
         public PlayerType CurrentPlayanlePlayerType => _currentPlayanlePlayerType.Value;
+        public PlayerScores Scoreplayer => _scoreplayer.Value;
         private PlayerType[,] _playerTypePositions;
 
         public event EventHandler<OnClickOnGridPositionEventArgs> OnClickOnGridPosition;
@@ -27,6 +29,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
 
         public event EventHandler OnGameStartedEvent;
         public event EventHandler OnSwitchCurrentPlayablePlayerEvent;
+        public event EventHandler OnScorePLayerChangeEvent;
         public event EventHandler<OnGameWinnerEventArguments> OnGameWinnerEvent;
         public event EventHandler OnGameRematchEvent;
         public event EventHandler OnGameTieEvent;
@@ -75,6 +78,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
                 NetworkManager.Singleton.OnClientConnectedCallback += NetWorkManager_OnClientConnectedCallback;
             }
             OnCurrentPlayanlePlayerTypeValueChanged();
+            OnScorePlayerValuesChanges();
         }
 
         private void OnCurrentPlayanlePlayerTypeValueChanged()
@@ -85,6 +89,15 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
                 Debug.Log($"_currentPlayanlePlayerType old value : {oldValue}");
                 Debug.Log($"_currentPlayanlePlayerType new value : {newValue}");
                 OnSwitchCurrentPlayablePlayerEvent?.Invoke(this, EventArgs.Empty);
+            };
+        }
+
+        private void OnScorePlayerValuesChanges()
+        {
+            _scoreplayer.OnValueChanged += (PlayerScores oldValues, PlayerScores newValues) =>
+            {
+                Debug.Log($"OnScorePlayerValuesChanges have changed");
+                OnScorePLayerChangeEvent?.Invoke(this, EventArgs.Empty);
             };
         }
 
@@ -150,6 +163,16 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
                 {
                     Debug.Log("winner");
                     Debug.Log($"TestWinner {_currentPlayanlePlayerType.Value}");
+                    Debug.Log($"we change score {_scoreplayer}");
+                    var score = _scoreplayer.Value;
+
+                    if (_currentPlayanlePlayerType.Value == PlayerType.Cross)
+                        score.CrossPlayerScore++;
+                    else if (_currentPlayanlePlayerType.Value == PlayerType.Circle)
+                        score.CirclePlayerScore++;
+
+                    _scoreplayer.Value = score; // ✅ Réassignation nécessaire avec un struct
+
                     TriggerOnGameWinnerEventRpc(line.index, _currentPlayanlePlayerType.Value);
                     _currentPlayanlePlayerType.Value = PlayerType.None;
                     return;
