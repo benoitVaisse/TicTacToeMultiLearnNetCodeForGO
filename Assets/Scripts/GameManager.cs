@@ -33,6 +33,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
         public event EventHandler<OnGameWinnerEventArguments> OnGameWinnerEvent;
         public event EventHandler OnGameRematchEvent;
         public event EventHandler OnGameTieEvent;
+        public event EventHandler OnPlaceSoundFXEvent;
         public class OnGameWinnerEventArguments : EventArgs
         {
             public Vector2Int CenterGridWin;
@@ -137,6 +138,7 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
 
             _playerTypePositions[x, y] = localPlayerType;
 
+            TriggerOnPlaceSoundFXEventRpc();
             OnClickOnGridPosition?.Invoke(this, new OnClickOnGridPositionEventArgs() { X = x, Y = y, PlayerType = localPlayerType });
             TestWinner();
 
@@ -152,6 +154,12 @@ namespace TicTacToeMultiLearnNetCodeForGO.Assets.Scripts
                     _currentPlayanlePlayerType.Value = PlayerType.None;
                     break;
             }
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void TriggerOnPlaceSoundFXEventRpc()
+        {
+            OnPlaceSoundFXEvent?.Invoke(this, EventArgs.Empty);
         }
 
         private void TestWinner()
